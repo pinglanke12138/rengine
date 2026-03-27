@@ -27,6 +27,9 @@ while getopts nh opt; do
    esac
 done
 
+DOCKER_INSTALL_SCRIPT_URL=${DOCKER_INSTALL_SCRIPT_URL:-"https://get.daocloud.io/docker"}
+DOCKER_COMPOSE_DOWNLOAD_BASE=${DOCKER_COMPOSE_DOWNLOAD_BASE:-"https://get.ghproxy.com/https://github.com/docker/compose/releases/download"}
+
 if [ $isNonInteractive = false ]; then
     read -p "Are you sure, you made changes to .env file (y/n)? " answer
     case ${answer:0:1} in
@@ -80,7 +83,7 @@ echo "#########################################################################"
 if [ -x "$(command -v docker)" ]; then
   tput setaf 2; echo "Docker already installed, skipping."
 else
-  curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh
+  curl -fsSL "$DOCKER_INSTALL_SCRIPT_URL" -o get-docker.sh && sh get-docker.sh
   tput setaf 2; echo "Docker installed!!!"
 fi
 
@@ -93,7 +96,7 @@ echo "#########################################################################"
 if [ -x "$(command -v docker compose)" ]; then
   tput setaf 2; echo "Docker Compose already installed, skipping."
 else
-  curl -L "https://github.com/docker/compose/releases/download/v2.5.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  curl -L "${DOCKER_COMPOSE_DOWNLOAD_BASE}/v2.5.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
   chmod +x /usr/local/bin/docker-compose
   ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
   tput setaf 2; echo "Docker Compose installed!!!"

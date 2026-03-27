@@ -55,6 +55,7 @@ urlpatterns = [
         include(
             'api.urls',
             'api')),
+    path('i18n/', include('django.conf.urls.i18n')),
     path(
         'media/<path:path>', 
         serve_protected_media, 

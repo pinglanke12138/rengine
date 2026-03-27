@@ -197,6 +197,7 @@ loglevel='info'
 if [ "$DEBUG" == "1" ]; then
     loglevel='debug'
 fi
+api_queue_concurrency="${API_QUEUE_CONCURRENCY:-8}"
 
 generate_worker_command() {
     local queue=$1
@@ -227,33 +228,33 @@ fi
 
 # API shared task worker
 if [ "$DEBUG" == "1" ]; then
-    commands+="watchmedo auto-restart --recursive --pattern=\"*.py\" --directory=\"/usr/src/app/api/\" -- celery -A api.shared_api_tasks worker --pool=gevent --optimization=fair --concurrency=30 --loglevel=$loglevel -Q api_queue -n api_worker &"$'\n'
+    commands+="watchmedo auto-restart --recursive --pattern=\"*.py\" --directory=\"/usr/src/app/api/\" -- celery -A api.shared_api_tasks worker --pool=gevent --optimization=fair --concurrency=$api_queue_concurrency --loglevel=$loglevel -Q api_queue -n api_worker &"$'\n'
 else
-    commands+="celery -A api.shared_api_tasks worker --pool=gevent --concurrency=30 --optimization=fair --loglevel=$loglevel -Q api_queue -n api_worker &"$'\n'
+    commands+="celery -A api.shared_api_tasks worker --pool=gevent --concurrency=$api_queue_concurrency --optimization=fair --loglevel=$loglevel -Q api_queue -n api_worker &"$'\n'
 fi
 
 # worker format: "queue_name:concurrency:worker_name"
 workers=(
-    "initiate_scan_queue:30:initiate_scan_worker"
-    "subscan_queue:30:subscan_worker"
-    "report_queue:20:report_worker"
-    "send_notif_queue:10:send_notif_worker"
-    "send_task_notif_queue:10:send_task_notif_worker"
-    "send_file_to_discord_queue:5:send_file_to_discord_worker"
-    "send_hackerone_report_queue:5:send_hackerone_report_worker"
-    "parse_nmap_results_queue:10:parse_nmap_results_worker"
-    "geo_localize_queue:20:geo_localize_worker"
-    "query_whois_queue:10:query_whois_worker"
-    "remove_duplicate_endpoints_queue:30:remove_duplicate_endpoints_worker"
-    "run_command_queue:50:run_command_worker"
-    "query_reverse_whois_queue:10:query_reverse_whois_worker"
-    "query_ip_history_queue:10:query_ip_history_worker"
-    "llm_queue:30:llm_worker"
-    "dorking_queue:10:dorking_worker"
-    "osint_discovery_queue:10:osint_discovery_worker"
-    "h8mail_queue:10:h8mail_worker"
-    "theHarvester_queue:10:theHarvester_worker"
-    "send_scan_notif_queue:10:send_scan_notif_worker"
+    "initiate_scan_queue:${INITIATE_SCAN_QUEUE_CONCURRENCY:-6}:initiate_scan_worker"
+    "subscan_queue:${SUBSCAN_QUEUE_CONCURRENCY:-6}:subscan_worker"
+    "report_queue:${REPORT_QUEUE_CONCURRENCY:-4}:report_worker"
+    "send_notif_queue:${SEND_NOTIF_QUEUE_CONCURRENCY:-4}:send_notif_worker"
+    "send_task_notif_queue:${SEND_TASK_NOTIF_QUEUE_CONCURRENCY:-4}:send_task_notif_worker"
+    "send_file_to_discord_queue:${SEND_FILE_TO_DISCORD_QUEUE_CONCURRENCY:-2}:send_file_to_discord_worker"
+    "send_hackerone_report_queue:${SEND_HACKERONE_REPORT_QUEUE_CONCURRENCY:-2}:send_hackerone_report_worker"
+    "parse_nmap_results_queue:${PARSE_NMAP_RESULTS_QUEUE_CONCURRENCY:-4}:parse_nmap_results_worker"
+    "geo_localize_queue:${GEO_LOCALIZE_QUEUE_CONCURRENCY:-4}:geo_localize_worker"
+    "query_whois_queue:${QUERY_WHOIS_QUEUE_CONCURRENCY:-4}:query_whois_worker"
+    "remove_duplicate_endpoints_queue:${REMOVE_DUPLICATE_ENDPOINTS_QUEUE_CONCURRENCY:-6}:remove_duplicate_endpoints_worker"
+    "run_command_queue:${RUN_COMMAND_QUEUE_CONCURRENCY:-12}:run_command_worker"
+    "query_reverse_whois_queue:${QUERY_REVERSE_WHOIS_QUEUE_CONCURRENCY:-3}:query_reverse_whois_worker"
+    "query_ip_history_queue:${QUERY_IP_HISTORY_QUEUE_CONCURRENCY:-3}:query_ip_history_worker"
+    "llm_queue:${LLM_QUEUE_CONCURRENCY:-2}:llm_worker"
+    "dorking_queue:${DORKING_QUEUE_CONCURRENCY:-3}:dorking_worker"
+    "osint_discovery_queue:${OSINT_DISCOVERY_QUEUE_CONCURRENCY:-3}:osint_discovery_worker"
+    "h8mail_queue:${H8MAIL_QUEUE_CONCURRENCY:-2}:h8mail_worker"
+    "theHarvester_queue:${THEHARVESTER_QUEUE_CONCURRENCY:-2}:theHarvester_worker"
+    "send_scan_notif_queue:${SEND_SCAN_NOTIF_QUEUE_CONCURRENCY:-3}:send_scan_notif_worker"
 )
 
 for worker in "${workers[@]}"; do
