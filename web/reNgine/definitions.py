@@ -457,6 +457,8 @@ FOUR_OH_FOUR_URL = '/404/'
 # OLLAMA DEFINITIONS
 ###############################################################################
 OLLAMA_INSTANCE = 'http://ollama:11434'
+OPENCLAW_INSTANCE = 'http://openclaw:8000'
+OPENCLAW_CHAT_COMPLETION_PATH = '/v1/chat/completions'
 
 DEFAULT_GPT_MODELS = [
     {
