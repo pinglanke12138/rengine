@@ -28,13 +28,18 @@ class OpenAiAPIKey(models.Model):
 		return self.key
 	
 
-class OllamaSettings(models.Model):
+class LLMProviderSettings(models.Model):
 	id = models.AutoField(primary_key=True)
 	selected_model = models.CharField(max_length=500)
-	use_ollama = models.BooleanField(default=True)
+	use_external_provider = models.BooleanField(default=True, db_column='use_ollama')
 
 	def __str__(self):
 		return self.selected_model
+
+	class Meta:
+		db_table = 'dashboard_ollamasettings'
+		verbose_name = 'LLM Provider Setting'
+		verbose_name_plural = 'LLM Provider Settings'
 
 
 class NetlasAPIKey(models.Model):

@@ -332,76 +332,39 @@ class InAppNotificationManagerViewSet(viewsets.ModelViewSet):
 		return Response(status=HTTP_204_NO_CONTENT)
 
 
-class OllamaManager(APIView):
+class LLMProviderManager(APIView):
 	permission_classes = [HasPermission]
 	permission_required = PERM_MODIFY_SYSTEM_CONFIGURATIONS
 
 	def get(self, request):
-		"""
-		API to download Ollama Models
-		sends a POST request to download the model
-		"""
-		req = self.request
-		model_name = req.query_params.get('model')
-		response = {
-			'status': False
-		}
-		try:
-			pull_model_api = f'{OLLAMA_INSTANCE}/api/pull'
-			_response = requests.post(
-				pull_model_api, 
-				json={
-					'name': model_name,
-					'stream': False
-				}
-			).json()
-			if _response.get('error'):
-				response['status'] = False
-				response['error'] = _response.get('error')
-			else:
-				response['status'] = True
-		except Exception as e:
-			response['error'] = str(e)		
-		return Response(response)
+		return Response({
+			'status': False,
+			'error': 'Local model download has been removed. Please configure API models in LLM Toolkit.'
+		}, status=status.HTTP_400_BAD_REQUEST)
 	
 	def delete(self, request):
-		req = self.request
-		model_name = req.query_params.get('model')
-		delete_model_api = f'{OLLAMA_INSTANCE}/api/delete'
-		response = {
-			'status': False
-		}
-		try:
-			_response = requests.delete(
-				delete_model_api, 
-				json={
-					'name': model_name
-				}
-			).json()
-			if _response.get('error'):
-				response['status'] = False
-				response['error'] = _response.get('error')
-			else:
-				response['status'] = True
-		except Exception as e:
-			response['error'] = str(e)
-		return Response(response)
+		return Response({
+			'status': False,
+			'error': 'Local model management has been removed. Please switch model provider in LLM Toolkit.'
+		}, status=status.HTTP_400_BAD_REQUEST)
 	
 	def put(self, request):
 		req = self.request
 		model_name = req.query_params.get('model')
-		# check if model_name is in DEFAULT_GPT_MODELS
 		response = {
 			'status': False
 		}
-		use_ollama = True
-		if any(model['name'] == model_name for model in DEFAULT_GPT_MODELS):
-			use_ollama = False
+		if not model_name:
+			response['error'] = 'Missing required model parameter'
+			return Response(response, status=status.HTTP_400_BAD_REQUEST)
+		if not (model_name.startswith('openai:') or model_name.startswith('openclaw:')):
+			response['error'] = 'Model should use provider prefix: openai:<model> or openclaw:<model>'
+			return Response(response, status=status.HTTP_400_BAD_REQUEST)
 		try:
-			OllamaSettings.objects.update_or_create(
+			LLMProviderSettings.objects.update_or_create(
 				defaults={
 					'selected_model': model_name,
-					'use_ollama': use_ollama
+					'use_external_provider': True
 				},
 				id=1
 			)

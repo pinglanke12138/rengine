@@ -1,7 +1,7 @@
 services:
   db:
     restart: always
-    image: "postgres:12.3-alpine"
+    image: "${REGISTRY_MIRROR_PREFIX:-docker.m.daocloud.io}/postgres:12.3-alpine"
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -16,7 +16,7 @@ services:
 
   redis:
     restart: always
-    image: "redis:alpine"
+    image: "${REGISTRY_MIRROR_PREFIX:-docker.m.daocloud.io}/redis:alpine"
     hostname: redis
     networks:
       - rengine_network
@@ -24,6 +24,13 @@ services:
   celery:
     build:
       context: ./web
+      args:
+        - APT_MIRROR_HOST=${APT_MIRROR_HOST:-mirrors.tuna.tsinghua.edu.cn}
+        - PIP_INDEX_URL=${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
+        - GO_PROXY=${GO_PROXY:-https://goproxy.cn,direct}
+        - RUSTUP_DIST_SERVER=${RUSTUP_DIST_SERVER:-https://mirrors.ustc.edu.cn/rust-static}
+        - RUSTUP_UPDATE_ROOT=${RUSTUP_UPDATE_ROOT:-https://mirrors.ustc.edu.cn/rust-static/rustup}
+        - GH_PROXY_PREFIX=${GH_PROXY_PREFIX:-https://ghfast.top/}
     restart: always
     entrypoint: /usr/src/app/celery-entrypoint.sh
     # command: celery -A reNgine worker --autoscale=${MAX_CONCURRENCY},${MIN_CONCURRENCY} -l INFO
@@ -48,6 +55,8 @@ services:
       - POSTGRES_HOST=${POSTGRES_HOST}
       - MAX_CONCURRENCY=${MAX_CONCURRENCY}
       - MIN_CONCURRENCY=${MIN_CONCURRENCY}
+      - GITHUB_PROXY_PREFIX=${GITHUB_PROXY_PREFIX}
+      - RAW_GITHUB_BASE=${RAW_GITHUB_BASE}
     depends_on:
       - db
       - redis
@@ -55,7 +64,15 @@ services:
       - rengine_network
 
   celery-beat:
-    build: ./web
+    build:
+      context: ./web
+      args:
+        - APT_MIRROR_HOST=${APT_MIRROR_HOST:-mirrors.tuna.tsinghua.edu.cn}
+        - PIP_INDEX_URL=${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
+        - GO_PROXY=${GO_PROXY:-https://goproxy.cn,direct}
+        - RUSTUP_DIST_SERVER=${RUSTUP_DIST_SERVER:-https://mirrors.ustc.edu.cn/rust-static}
+        - RUSTUP_UPDATE_ROOT=${RUSTUP_UPDATE_ROOT:-https://mirrors.ustc.edu.cn/rust-static/rustup}
+        - GH_PROXY_PREFIX=${GH_PROXY_PREFIX:-https://ghfast.top/}
     entrypoint: /usr/src/app/beat-entrypoint.sh
     command: celery -A reNgine beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
     environment:
@@ -83,6 +100,13 @@ services:
   web:
     build:
       context: ./web
+      args:
+        - APT_MIRROR_HOST=${APT_MIRROR_HOST:-mirrors.tuna.tsinghua.edu.cn}
+        - PIP_INDEX_URL=${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
+        - GO_PROXY=${GO_PROXY:-https://goproxy.cn,direct}
+        - RUSTUP_DIST_SERVER=${RUSTUP_DIST_SERVER:-https://mirrors.ustc.edu.cn/rust-static}
+        - RUSTUP_UPDATE_ROOT=${RUSTUP_UPDATE_ROOT:-https://mirrors.ustc.edu.cn/rust-static/rustup}
+        - GH_PROXY_PREFIX=${GH_PROXY_PREFIX:-https://ghfast.top/}
     entrypoint: /usr/src/app/entrypoint.sh
     restart: always
     image: docker.pkg.github.com/yogeshojha/rengine/rengine:latest
@@ -119,7 +143,7 @@ services:
 
   proxy:
     restart: always
-    image: nginx:alpine
+    image: "${REGISTRY_MIRROR_PREFIX:-docker.m.daocloud.io}/nginx:alpine"
     ports:
       - 8082:8082/tcp
       - 443:443/tcp
@@ -140,16 +164,6 @@ services:
       - scan_results:/usr/src/scan_results
     networks:
       - rengine_network
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"
-    networks:
-      - rengine_network
-
 networks:
   rengine_network:
 
@@ -162,7 +176,6 @@ volumes:
   wordlist:
   scan_results:
   static_volume:
-  ollama_data:
 
 secrets:
   proxy.ca:

@@ -1,0 +1,66 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: reNgine\n"
+"POT-Creation-Date: 2026-03-27 00:00+0000\n"
+"PO-Revision-Date: 2026-03-27 00:00+0000\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "LLM Toolkit (API Mode)"
+msgstr "LLM 工具箱（API 模式）"
+
+msgid "LLM Toolkit"
+msgstr "LLM 工具箱"
+
+msgid "now works in API mode only. You can select either OpenAI API models or OpenClaw API models."
+msgstr "当前仅支持 API 模式。你可以选择 OpenAI API 模型或 OpenClaw API 模型。"
+
+msgid "No local model download/delete is required. Configure API credentials and endpoint first, then pick one model below."
+msgstr "无需本地下载/删除模型。请先配置 API 凭证与接口地址，再从下方选择模型。"
+
+msgid "set API key in API Vault."
+msgstr "请在 API Vault 中配置 API Key。"
+
+msgid "set"
+msgstr "请在环境变量中设置"
+
+msgid "and optional"
+msgstr "以及可选的"
+
+msgid "in environment."
+msgstr "。"
+
+msgid "available Models"
+msgstr "可用模型"
+
+msgid "Warning:"
+msgstr "警告："
+
+msgid "OpenAI model is currently selected and requires API key to be set. Please set the API key in the"
+msgstr "当前选择的是 OpenAI 模型，需要配置 API Key。请在"
+
+msgid "API Vault"
+msgstr "API Vault"
+
+msgid "OpenClaw model is currently selected, but"
+msgstr "当前选择的是 OpenClaw 模型，但"
+
+msgid "is not configured."
+msgstr "尚未配置。"
+
+msgid "Use Model"
+msgstr "使用模型"
+
+msgid "API Provider"
+msgstr "API 提供方"
+
+msgid "Parameters"
+msgstr "参数量"
+
+msgid "Family"
+msgstr "模型族"
+
+msgid "No API models configured."
+msgstr "未配置任何 API 模型。"

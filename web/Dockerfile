@@ -3,9 +3,15 @@ FROM ubuntu:22.04
 
 ARG GECKOVERSION=0.33.0
 ARG GOVERSION=1.21.5
+ARG APT_MIRROR_HOST=mirrors.tuna.tsinghua.edu.cn
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG GO_PROXY=https://goproxy.cn,direct
+ARG RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+ARG RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+ARG GH_PROXY_PREFIX=https://ghfast.top/
 
 RUN ARCH=$(dpkg --print-architecture) \ 
-    && if [ "${ARCH}" ! "arm64" ] || [ "${ARCH}" ! "amd64" ]; then \
+    && if [ "${ARCH}" != "arm64" ] && [ "${ARCH}" != "amd64" ]; then \
       echo "reNgine not supported, encountered unknown architecture: ${TARGETPLATFORM}" \
       && exit 1; \
     fi
@@ -24,6 +30,13 @@ ENV PYTHONUNBUFFERED 1
 ENV GOROOT="/usr/local/go"
 ENV GOPATH=$HOME/go
 ENV PATH="${PATH}:${GOROOT}/bin:${GOPATH}/bin"
+ENV PIP_INDEX_URL=${PIP_INDEX_URL}
+ENV PIP_TRUSTED_HOST=mirrors.tuna.tsinghua.edu.cn
+ENV GOPROXY=${GO_PROXY}
+ENV RUSTUP_DIST_SERVER=${RUSTUP_DIST_SERVER}
+ENV RUSTUP_UPDATE_ROOT=${RUSTUP_UPDATE_ROOT}
+
+RUN sed -i "s/archive.ubuntu.com/${APT_MIRROR_HOST}/g; s/security.ubuntu.com/${APT_MIRROR_HOST}/g" /etc/apt/sources.list
 
 # Install Python
 RUN apt update -y && \
@@ -56,7 +69,7 @@ RUN apt install -y --no-install-recommends \
 RUN add-apt-repository ppa:mozillateam/ppa
 
 RUN ARCH=$(dpkg --print-architecture) \ 
-    && curl -L https://go.dev/dl/go${GOVERSION}.linux-${ARCH}.tar.gz | tar -xzC /usr/local
+    && curl -L https://mirrors.aliyun.com/golang/go${GOVERSION}.linux-${ARCH}.tar.gz | tar -xzC /usr/local
 
 RUN ARCH=$(dpkg --print-architecture) \ 
     && if [ "${ARCH}" = "arm64" ]; then \
@@ -64,7 +77,7 @@ RUN ARCH=$(dpkg --print-architecture) \
     elif [ "${ARCH}" = "amd64" ]; then \
       GECKOPATH="geckodriver-v${GECKOVERSION}-linux64.tar.gz"; \
     fi \
-    && wget https://github.com/mozilla/geckodriver/releases/download/v${GECKOVERSION}/${GECKOPATH} \
+    && wget ${GH_PROXY_PREFIX}https://github.com/mozilla/geckodriver/releases/download/v${GECKOVERSION}/${GECKOPATH} \
     && tar -xvf ${GECKOPATH} \
     && rm ${GECKOPATH} \
     && mv geckodriver /usr/bin

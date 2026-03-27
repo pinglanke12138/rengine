@@ -465,35 +465,40 @@ def tool_arsenal_section(request, slug):
 @has_permission_decorator(PERM_MODIFY_SYSTEM_CONFIGURATIONS, redirect_url=FOUR_OH_FOUR_URL)
 def llm_toolkit_section(request, slug):
     context = {}
-    list_all_models_url = f'{OLLAMA_INSTANCE}/api/tags'
-    response = requests.get(list_all_models_url)
     all_models = []
-    selected_model = None
-    all_models = DEFAULT_GPT_MODELS.copy()
-    if response.status_code == 200:
-        models = response.json()
-        ollama_models = models.get('models')
-        date_format = "%Y-%m-%dT%H:%M:%S"
-        for model in ollama_models:
-           all_models.append({**model, 
-                'modified_at': datetime.strptime(model['modified_at'].split('.')[0], date_format),
-                'is_local': True,
-            })
-    # find selected model name from db
-    selected_model = OllamaSettings.objects.first()
-    if selected_model:
-        selected_model = {'selected_model': selected_model.selected_model}
-    else:
-        # use gpt3.5-turbo as default
-        selected_model = {'selected_model': 'gpt-3.5-turbo'}
-    for model in all_models:
-        if model['name'] == selected_model['selected_model']:
-            model['selected'] = True
+    selected = LLMProviderSettings.objects.first()
+    selected_model_name = selected.selected_model if selected else 'openai:gpt-3.5-turbo'
+
+    for model in DEFAULT_GPT_MODELS:
+        all_models.append({
+            **model,
+            'name': f'openai:{model["name"]}',
+            'provider': 'OpenAI API',
+            'is_api': True,
+            'selected': selected_model_name in [model['name'], f'openai:{model["name"]}'],
+        })
+
+    openclaw_models = os.getenv('OPENCLAW_AVAILABLE_MODELS', 'openclaw-default')
+    for model_name in [item.strip() for item in openclaw_models.split(',') if item.strip()]:
+        encoded_name = f'openclaw:{model_name}'
+        all_models.append({
+            'name': encoded_name,
+            'modified_at': '',
+            'details': {
+                'family': 'OpenClaw',
+                'parameter_size': 'Custom'
+            },
+            'provider': 'OpenClaw API',
+            'is_api': True,
+            'selected': selected_model_name == encoded_name
+        })
+
     context['installed_models'] = all_models
-    # show error message for openai key, if any gpt is selected
     openai_key = get_open_ai_key()
-    if not openai_key and 'gpt' in selected_model['selected_model']:
+    if not openai_key and (selected_model_name.startswith('openai:') or selected_model_name.startswith('gpt-')):
         context['openai_key_error'] = True
+    if selected_model_name.startswith('openclaw:') and not os.getenv('OPENCLAW_API_BASE'):
+        context['openclaw_api_error'] = True
     return render(request, 'scanEngine/settings/llm_toolkit.html', context)
 
 

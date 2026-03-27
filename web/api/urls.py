@@ -181,9 +181,13 @@ urlpatterns = [
         UninstallTool.as_view(),
         name='uninstall_tool'),
 	path(
+        'tool/llm_provider/',
+        LLMProviderManager.as_view(),
+        name='llm_provider_manager'),
+	path(
         'tool/ollama/',
-        OllamaManager.as_view(),
-        name='ollama_manager'),
+        LLMProviderManager.as_view(),
+        name='ollama_manager_deprecated'),
     path(
         'rengine/update/',
         RengineUpdateCheck.as_view(),

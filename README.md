@@ -220,6 +220,24 @@ You can also find the deep dive video on how to use and install reNgine from her
 
     * `DJANGO_SUPERUSER_PASSWORD`: web interface admin password (used to login to the web interface).
 
+### China-friendly + low-resource deployment profile
+
+For low resource VPS (4C/4G) and CN network environments, this repository now ships safer defaults:
+
+- Lower Celery worker concurrency defaults in `.env` (to reduce memory pressure).
+- Docker image pulls through configurable mirror prefix (`REGISTRY_MIRROR_PREFIX`, default `docker.m.daocloud.io`).
+- Dockerfile build toolchain/pip/go/rust now uses configurable CN mirrors by default (`APT_MIRROR_HOST`, `PIP_INDEX_URL`, `GO_PROXY`, `RUSTUP_DIST_SERVER`, `RUSTUP_UPDATE_ROOT`, `GH_PROXY_PREFIX`).
+- GitHub/raw downloads in container startup now support proxy variables (`GITHUB_PROXY_PREFIX`, `RAW_GITHUB_BASE`) to reduce overseas dependency failures.
+- Django i18n now includes `zh-hans` (set `LANGUAGE_CODE=zh-hans` in `.env`).
+- Optional OpenClaw API integration for AI generation (`OPENCLAW_API_BASE`, `OPENCLAW_MODEL`, model format `openclaw:<model>`). OpenClaw is not bundled in docker-compose and should be deployed separately.
+
+If you want to switch back to global upstream services, set:
+
+```bash
+REGISTRY_MIRROR_PREFIX=docker.io
+LANGUAGE_CODE=en-us
+```
+
 1. Adjust Celery worker scaling in `.env`
 
     ```bash
